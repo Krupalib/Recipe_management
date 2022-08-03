@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>   </title>
+  </head>
+  <body>
+
+{% if recipe %}
+
+<h1>{{recipe.recipe_id}}</h1>
+
+
+{% endif %}
+
+<h2>Ingredients used in the recipe: </h2>
+<br>
+  {% if process %}
+<table>
+  {% for step in process %}
+  {% if step.ingredient_id.ingredient_id != 1111 %}
+<tr>
+  <td>{{step.ingredient_id.ingredient_name}}</td>
+</tr>
+{% endif %}
+{% endfor %}
+</table>
+
+
+<h2>Recipe Steps: </h2>
+<table>
+
+    <thead>
+      <tr>
+        <td>Step number</td>
+        <td>ingredient</td>
+        <td>utensil used</td>
+        <td>process</td>
+        <td></td>
+      </tr>
+    </thead>
+    <tbody>
+   {%for step in process%}
+    <tr>
+      <td>{{step.step_no}}</td>
+      <td>{{step.ingredient_id.ingredient_name}}</td>
+      <td>{{step.utensil_id.utensil_name}}</td>
+      <td>{{step.process}}</td>
+    </tr>
+  {%endfor%}
+
+    </tbody>
+</table>
+
+{% endif %}
+  </body>
+</html>

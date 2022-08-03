@@ -1,0 +1,94 @@
+{%load static%}
+
+body {
+    margin: 0;
+    text-align: center;
+  font-family: 'Merriweather', serif;
+    background: url(  "{%static "images/pexels-lukas-349609.jpg"%}" ) no-repeat center center fixed;
+    background-size: cover;
+    }
+
+  h1{
+    margin: 50px auto 0 auto;
+    font-family: 'Sacramento', cursive;
+    font-size: 6rem;
+    color: #17a2b8;
+  }
+  hr {
+  border-top: 10px dotted grey;
+  width: 60%;
+  border-bottom: none;
+}
+
+  h2{
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2.5rem;
+      color: #2C3333;
+  }
+
+  h3{
+    font-family: 'Montserrat', sans-serif;
+  color: #11999E;
+  }
+
+  img {
+
+  border: 5px solid #888;
+  border-radius: 9px;
+  padding: 1.5px;
+  width: 250px;
+}
+
+#navbar {
+ background-color: #17a2b8;
+  position: fixed;
+  top: -50px;
+  width: 100%;
+  display: block;
+  transition: top 0.3s;
+  font-family: 'Calligraffitti', cursive;
+}
+
+#navbar a {
+  float: left;
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 15px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.button {
+  border: 1px solid #555;
+  border-radius: 9px;
+  color: #c94c4c;
+  padding: 10px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+
+}
+.button:hover{
+  color: black;
+  background: #11999E;;
+}
+
+#navbar a:hover {
+  background-color: #ddd;
+  color: black;
+}
+td {
+       font-size: 1.8rem;
+       width: 85%;
+       text-align: center;
+       font-family: 'Cormorant Garamond', serif;
+       color: #395B64;
+     }
+table {
+             border-collapse: separate;
+             border-spacing: 100px;
+           }
