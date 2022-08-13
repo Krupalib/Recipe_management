@@ -1,5 +1,7 @@
 from django.db import models
-
+from django.contrib.auth.models import User
+from user.models import user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
 # Create your models here.
 CATEGORY = (
       ('Breakfast', 'Breakfast'),
@@ -79,3 +81,34 @@ class process_steps(models.Model):
 
     def  __str__(self):
         return f'{self.recipe_id}-{self.step_no}'
+
+class ratings(models.Model):
+     user_id = models.ForeignKey(User,on_delete = models.CASCADE, null = True, default= None)
+     recipe_id = models.ForeignKey(Recipes, on_delete = models.CASCADE, null = True)
+     rating = models.PositiveIntegerField(null=True, default = 0,
+
+    validators=[
+                MaxValueValidator(5),
+                MinValueValidator(0),
+    ]
+     )  # if the rating is zero.. it means no user has rated it yet.
+
+     def create_ratings(cls, rating):
+
+
+         cls.rating = rating
+
+         return cls
+
+     def  __str__(self):
+         return f'{self.pk}-{self.rating}'
+
+
+
+class shared_recipes(models.Model):
+     shared_by = models.ForeignKey(User,on_delete = models.CASCADE,related_name= 'shared_by_this_user', db_column='shared_by_this_user'  , null = True, default= None)
+     shared_to = models.ForeignKey(User,on_delete = models.CASCADE,related_name= 'shared_to_this_user', db_column= 'shared_to_this_user', null = True, default= None)
+     recipe_id = models.ForeignKey(Recipes, on_delete = models.CASCADE, null = True)
+
+     def  __str__(self):
+          return f'{self.shared_by}-{self.recipe_id}'

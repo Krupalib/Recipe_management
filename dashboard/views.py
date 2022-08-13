@@ -1,7 +1,9 @@
 from django.shortcuts import render
-from django.http import HttpResponse
-from dashboard.models import Recipes, userRecipes, Utensils,Ingredients,keywords,process_steps
-
+from django.http import HttpResponse,JsonResponse
+from dashboard.models import Recipes, userRecipes, Utensils,Ingredients,keywords,process_steps,ratings,shared_recipes
+from django.contrib.auth.decorators import login_required
+from user.models import user_model
+from django.contrib.auth.models import User
 # Create your views here.
 def index(request):
     return render(request, 'dashboard/index.html')
@@ -13,7 +15,19 @@ def recipe(request):
     recipe_list = Recipes.objects.all()
     recipe_dict = {'recipe' : recipe_list}
     Ingredients_list = Ingredients.objects.all()
-    keyword_list = keywords.objects.all()
+
+
+    keyword_list = list()
+    keyword_list_result = list()    #keyword_list =  list(dict.fromkeys(keyword_list))
+
+    for inst in keywords.objects.all():
+        flag = True
+        for k in keyword_list_result:
+            if inst.keyword == k.keyword:
+                flag = False
+        if flag == True:
+            keyword_list_result.append(inst)
+    print(keyword_list)
     result = list()
     name_of_recipe_flag = False
     cooking_time_flag = False
@@ -72,13 +86,64 @@ def recipe(request):
     else:
         result = recipe_list
 
-    return render(request, 'dashboard/Recipe.html', {'recipe' : result, 'ingredient' : Ingredients_list, 'keyword' : keyword_list})
+
+    ratings_flag = False
+    if "rating" in request.GET:
+
+        ratings_flag = True
+        rating = request.GET['rating']
+        result_for_rating = list(ratings.objects.filter(rating__icontains = rating))
+
+    final_result = list()
+    if ratings_flag:
+        #final_result= result_for_rating
+
+         for r  in result:
+            for x in result_for_rating:
+                if(x.recipe_id != None):
+                    if (r.recipe_id == x.recipe_id.recipe_id):
+                        final_result.append(r)
+    else:
+        final_result = result
+    final_result = list(dict.fromkeys(final_result))
+
+    return render(request, 'dashboard/Recipe.html', {'recipe' : final_result, 'ingredient' : Ingredients_list, 'keyword' : keyword_list_result})
 
 def process(request):
     webpage_list = process_steps.objects.order_by('step_no')
     date_dict = {'access_records' : webpage_list}
 
+
+@login_required(login_url="/login/")
 def steps(request,id):
+    print(type(id))
+    if request.method == "POST":
+        if 'first' in request.POST:
+            val = 1
+        elif 'second' in request.POST:
+            val = 2
+        elif 'third' in request.POST:
+            val = 3
+        elif 'fourth' in request.POST:
+            val = 4
+        elif 'fifth' in request.POST:
+            val = 5
+        r = ratings()
+        r.user_id = request.user
+        r.recipe_id = Recipes.objects.get(recipe_id__icontains = id)
+        r.rating = val
+        rec = ratings.objects.filter(user_id__username__icontains = request.user)
+
+        for rat in rec:
+            if rat.recipe_id == Recipes.objects.get(recipe_id__icontains = id):
+                rat.delete()
+                #ratings.object.get(recipe_id__icontains = id,user_id__username__icontains = request.user ).delete()
+
+
+        r.save()
+
+    current_user = request.user
+    #print(current_user)
     process = list()
     alldata = process_steps.objects.all()
     process = list(process_steps.objects.filter(recipe_id__recipe_id__icontains = id))
@@ -105,8 +170,26 @@ def steps(request,id):
 
 
 
-    process = list(process_steps.objects.filter(recipe_id__recipe_id__icontains = id))
-    x = Recipes.objects.filter(recipe_id__icontains = id)
+    process_without_number_of_serving = list(process_steps.objects.filter(recipe_id__recipe_id__icontains = id))
+
+    x = Recipes.objects.get(recipe_id = int(id) )
+
+    if 'number_of_serves' in request.GET:
+        n = request.GET['number_of_serves']
+
+        for r in process_without_number_of_serving:
+
+
+            r.Quantity =(( int(r.Quantity))/int(x.number_of_serves)*int(n))
+            process.append(r)
+            print(r.Quantity)
+    else:
+        for pro in process_without_number_of_serving:
+            process.append(pro)
+
+
+
+    #user_id = user.user_model.filter(user_id__icontains = )
     max_step = None
     for x in process:
         if max_step == None or x.step_no > max_step:
@@ -116,4 +199,49 @@ def steps(request,id):
         if already_sorted:
             break
     process_dict = {'process' : process}
-    return render(request,'dashboard/steps.html', {'process' : process,'recipe' : x})
+    user_list = User.objects.all()
+    return render(request,'dashboard/steps.html', {'process' : process,'recipe' : x,'user':current_user,'user_list':user_list})
+
+
+def rate_recipe(request):
+
+    if request.method == "POST":
+        print("you are in the rating url")
+        el_id = request.POST.get('el_id')
+        val = request.POST.get('val')
+        current_user = request.POST.get('current_user')
+        #aprint(type(current_user))   # current_user is a string
+        #print(type(el_id))    el_id is a string
+        obj = ratings()
+        user_id = request.user
+    #    y = ratings.objects.filter(user_id__username__icontains = request.user)
+
+
+        obj.create_ratings(val)
+        obj.user_id = request.user
+        obj.recipe_id = Recipes.objects.get(recipe_id = request.POST['el_id'])
+
+        print(obj.recipe_id)
+
+        # for ob in y:
+        #     # print(type(ob.recipe_id))
+        #     # print(type(el_id))
+        #     if ob.recipe_id == el_id:
+        #         ob.delete()
+
+        obj.save()
+
+        return JsonResponse({'success':'true', 'score': val}, safe=False)
+    return JsonResponse({'success':'false'})
+
+        ######################
+@login_required(login_url="/login/")
+def recipes_received(request):
+
+    recipe_list = list()
+    for data in shared_recipes.objects.all():
+        if data.shared_to == request.user:
+            recipe_list.append(data)
+
+
+    return render(request, 'dashboard/recipes_received.html', {'recipe_list': recipe_list})

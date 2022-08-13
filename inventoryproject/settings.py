@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'dashboard.apps.DashboardConfig',
     'user.apps.UserConfig',
     'crispy_forms',
+    'updaterecipe',
+
 ]
 
 MIDDLEWARE = [
@@ -134,4 +136,4 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_REDIRECT_URL = 'dashboard-index'
+LOGIN_REDIRECT_URL = 'dashboard-recipe'
